@@ -1,281 +1,173 @@
-<!DOCTYPE html>
-<html lang="th">
+<!doctype html>
+<!-- ไฟล์นี้คือแม่แบบ — showcase/index.html สร้างจากมันด้วย `node tools/build-showcase.js` (แทนที่ {{...}} ด้วยมาร์กอัปจริงของหน้า 3D ใน public/index.html) -->
+<html lang="th" data-theme="light">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lannacom Smart Building — Live Showcase</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Lannacom Live Showcase</title>
+<meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* หน้าจอโชว์ (BrightSign) — โฮสต์แยกจากเว็บ Digital Twin · ดึงตัวเลขสดจาก config.js (API) · เวทีคงที่ 1920×1080 ย่อ/ขยายพอดีจอ
-   เขียนแบบ Chromium รุ่นเก่าอ่านได้ (ไม่มี ?. ?? หรือ flex gap) */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#0b1410;overflow:hidden;font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;color:#1e293b}
-#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;background:#0b1410 url("bg.jpg") center center/cover no-repeat;overflow:hidden}
-#stage:before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(6,16,10,.18),rgba(6,16,10,0) 22%,rgba(6,16,10,0) 78%,rgba(6,16,10,.34))}
-.card{position:absolute;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:0 10px 36px rgba(8,20,12,.30);padding:22px 26px}
-@supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){.card{background:rgba(255,255,255,.80);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}}
-.ttl{font-size:21px;font-weight:600;color:#64748b;letter-spacing:.2px}
-.sub{font-size:17px;color:#64748b;margin-top:2px}
-.badge{position:absolute;right:24px;top:20px;font-size:17px;font-weight:600;color:#3f7d0a;background:#e7f4d6;border-radius:999px;padding:4px 14px}
-/* top bar */
-#top{left:24px;top:20px;width:1872px;height:92px;padding:0 26px;display:block}
-#brand{position:absolute;left:26px;top:14px}
-#brand svg{position:absolute;left:0;top:2px}
-#brand b{position:absolute;left:78px;top:0;font-size:36px;font-weight:700;color:#0f172a;white-space:nowrap;line-height:48px}
-#brand span{position:absolute;left:78px;top:44px;font-size:20px;color:#475569;white-space:nowrap}
-#pills{position:absolute;right:26px;top:18px;height:56px}
-.pill{display:inline-block;height:56px;line-height:56px;border-radius:999px;background:rgba(255,255,255,.9);border:1px solid #dbe4ee;padding:0 24px;font-size:24px;font-weight:600;margin-left:14px;vertical-align:top;color:#0f172a}
-.pill svg{vertical-align:-8px;margin-right:8px}
-.pill.live{color:#15803d}
-.dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:#22c55e;margin-right:10px;vertical-align:-1px;animation:blink 1.8s ease-in-out infinite}
-.pill.warn .dot{background:#f59e0b}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
-/* energy flow */
-#energy{left:24px;top:132px;width:430px;height:430px}
-#flow{position:absolute;left:25px;top:52px}
-/* environment */
-#env{left:24px;top:578px;width:430px;height:226px}
-.grid2{position:absolute;left:26px;right:26px;top:58px}
-.cell{position:absolute;width:176px;height:78px;background:#f1f5f9;border-radius:14px;padding:8px 16px}
-.cell .k{font-size:17px;color:#64748b;line-height:20px}
-.cell .v{font-size:31px;font-weight:600;color:#0f172a;line-height:40px;white-space:nowrap}
-.cell .v i{font-style:normal;font-size:19px;font-weight:500;color:#475569;margin-left:5px}
-/* equipment */
-#eq{left:24px;top:820px;width:430px;height:226px}
-.eqc{position:absolute;width:176px;height:78px;background:#f1f5f9;border-radius:14px;padding:8px 16px}
-.eqc .k{font-size:19px;color:#475569;line-height:22px}
-.eqc .k:before{content:"";display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:9px;background:var(--c);vertical-align:-1px}
-.eqc .v{font-size:36px;font-weight:700;color:#0f172a;line-height:44px}
-/* systems */
-#sys{right:24px;top:132px;width:430px;height:590px}
-.tile{position:absolute;width:176px;height:112px;border-radius:16px;background:#f1f5f9;padding:12px 16px}
-.tile .ic{width:30px;height:30px;color:#0f766e}
-.tile .k{position:absolute;left:54px;top:14px;font-size:20px;font-weight:600;color:#334155;line-height:26px}
-.tile .v{position:absolute;left:16px;bottom:10px;font-size:32px;font-weight:700;color:#0f172a;line-height:38px;white-space:nowrap}
-.tile .v i{font-style:normal;font-size:18px;font-weight:500;color:#475569;margin-left:5px}
-.tile.hide{display:none}
-/* sustainability */
-#sus{right:24px;top:738px;width:430px;height:308px}
-#susbar{position:absolute;left:26px;right:26px;top:92px;height:38px;border-radius:8px;overflow:hidden;background:#e2e8f0}
-#susbar div{float:left;height:38px;line-height:38px;text-align:center;font-size:19px;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap}
-.sl{position:absolute;top:146px;width:180px}
-.sl .k{font-size:18px;color:#475569}
-.sl .k:before{content:"";display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;background:var(--c)}
-.sl .v{font-size:25px;font-weight:700;color:#0f172a;margin-top:2px;white-space:nowrap}
-.sl .v i{font-style:normal;font-size:16px;font-weight:500;color:#475569}
-.sv{position:absolute;top:224px;width:176px;height:64px;background:#f1f5f9;border-radius:14px;padding:6px 14px}
-.sv .k{font-size:16px;color:#64748b;line-height:20px}
-.sv .v{font-size:26px;font-weight:700;color:#0f172a;line-height:32px;white-space:nowrap}
-#foot{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:15px;color:rgba(255,255,255,.88);text-shadow:0 1px 3px rgba(0,0,0,.7)}
-.fade{transition:opacity .5s}
-</style>
+<link rel="stylesheet" href="twin.css">
 </head>
 <body>
 <div id="stage">
-  <!-- top bar -->
-  <div id="top" class="card">
-    <div id="brand">
-      <svg width="62" height="62" viewBox="0 0 62 62"><circle cx="22" cy="31" r="17" fill="#f45b3b"/><circle cx="40" cy="31" r="17" fill="#2fbf5b" fill-opacity=".92"/></svg>
-      <b>lannacom</b><span>Smart Building Digital Twin</span>
+<header class="topbar">
+  <!-- มือถือ: แตะโลโก้เพื่อเปิดแผงเมนูเลื่อนซ้าย (#panelDrawer) — บน desktop โลโก้เป็นแค่โลโก้เฉยๆ ดู syncPanelLocation/openDrawer ใน app.js -->
+  <div class="brand" id="brandMenuBtn" role="button" tabindex="0" aria-label="Open menu" aria-expanded="false">
+    <span class="brand-mark">
+      <svg width="22" height="15" viewBox="0 0 46 30" aria-hidden="true">
+        <circle cx="13" cy="13" r="13" fill="#36b34a"/>
+        <rect x="24" y="2" width="22" height="22" rx="4" fill="#f0571f"/>
+      </svg>
+    </span>
+    <div class="brand-text">
+      <div class="brand-word">lannacom</div>
+      <div class="brand-name">Smart Building Digital Twin</div>
     </div>
-    <div id="pills">
-      <span class="pill" id="wx"><span id="wxic"></span><span id="wxtxt">--</span> &nbsp;<span id="wxt">--°</span> &nbsp;<span id="clock">--:--</span></span><span class="pill live" id="live"><span class="dot"></span><span id="livetxt">LIVE</span></span>
+  </div>
+
+  <div class="topbar-mid">
+    <!-- มือถือเท่านั้น: ชิปย่อ % พลังงานสะอาด แตะแล้วเปิดแผงเมนูซ้ายตรงไปหัวข้อ SUSTAINABILITY เลย — ดู openPanelDrawerToSustain ใน app.js -->
+    <button id="susTopbarChip" class="topbar-sus-chip" type="button" aria-label="Sustainability"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-11 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg> <span id="susTopbarValue">--%</span></button>
+    <!-- ปุ่มสภาพอากาศ (แทนนาฬิกาเดิม): ไอคอน + สภาพ + อุณหภูมิ + เวลา — กดเปิดแผง สด / จำลอง / ปิด (ดู section WEATHER ใน app.js) -->
+    <div id="wxWidget" class="wx-widget">
+      <button id="wxPill" class="wx-pill" type="button" aria-expanded="false" aria-controls="wxPanel"></button>
+      <div id="wxPanel" class="wx-panel hidden" role="dialog"></div>
     </div>
+    <div id="viewToggle" class="view-toggle">
+      <button data-mode="3d" class="active">3D</button>
+      <button data-mode="data">Data</button>
+    </div>
+    <div class="bell-wrap">
+      <button id="alertsBtn" class="icon-btn" aria-label="View alerts" title="View alerts" data-i18n-title="topbar.alerts" aria-expanded="false">
+        <svg class="hud-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="menu-row-label" data-i18n="topbar.alerts">View alerts</span>
+        <span class="icon-badge hidden" id="alertsBadge">0</span>
+      </button>
+      <div id="alertsDropdown" class="alerts-dropdown hidden">
+        <div class="ad-head"><span data-i18n="alerts.title">ALERTS</span> <span id="alertsDdCount" class="ad-count">0</span></div>
+        <div id="alertList" class="alert-list"></div>
+      </div>
+    </div>
+    <div class="settings-wrap">
+      <button id="settingsBtn" class="icon-btn" aria-label="Settings" title="Settings" data-i18n-title="topbar.settings" aria-expanded="false">
+        <svg class="hud-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="menu-row-label" data-i18n="topbar.settings">Settings</span>
+      </button>
+    </div>
+    <div class="chat-toggle-wrap">
+      <button id="chatToggleBtn" class="chat-toggle-btn" type="button" aria-label="Digital Twin Assistant" title="Digital Twin Assistant" data-i18n-title="chat.tooltip">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="12" r="7" fill="currentColor"/><rect x="10.5" y="6" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>
+        <span class="menu-row-label" data-i18n="chat.tooltip">Digital Twin Assistant</span>
+        <span id="chatBadge" class="chat-badge hidden"><span class="chat-badge-ring"></span></span>
+      </button>
+    </div>
+    <button id="langBtn" class="lang-btn" type="button" title="Switch language" aria-label="Switch language">EN</button>
+    <!-- มือถือเท่านั้น: ปุ่ม ☰ เปิดแผงเมนูขวา (#utilityDrawer) รวมกระดิ่ง/เกียร์/แชท/ภาษา — ดู syncUtilityLocation ใน app.js -->
+    <button id="utilityMenuBtn" class="icon-btn utility-menu-btn" type="button" aria-label="Open menu" aria-expanded="false">
+      <svg class="hud-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
+</header>
+<div id="appBody">
+<div id="appMain">
+<main id="viewport">
+  <div id="levelList" class="level-float"></div>
+</main>
+<aside class="panel-col left">
+  <section class="panel">
+    <div class="panel-head">
+      <span class="panel-title" id="efPanelTitle">CARBON FOOTPRINT</span>
+      <button type="button" class="pill mode-toggle carbon" id="efModeBtn" title="Switch between energy and carbon view">
+        <span class="dot" id="efModeDot" style="background:var(--cyan)"></span><span id="efModeText">Carbon</span>
+      </button>
+    </div>
+    <div class="energy-flow" id="energyFlowWrap">
+      <div class="energy-donut" id="energyDonut"></div>
+      <div class="kv mono" id="energyRows"></div>
+    </div>
+    <div class="today-consume">
+      <div class="tc-title" id="tcTitle">TODAY CARBON</div>
+      <div class="tc-bar" id="tcBar"></div>
+      <div class="tc-legend" id="tcLegend"></div>
+    </div>
+  </section>
 
-  <!-- energy -->
-  <div id="energy" class="card">
-    <div class="ttl" id="t_energy">พลังงาน</div><span class="badge" id="b_energy">—</span>
-    <svg id="flow" width="380" height="350" viewBox="0 0 380 350">
-      <defs><path id="p1" d="M95 92 L190 178"/><path id="p2" d="M285 92 L190 178"/><path id="p3" d="M190 178 L190 252"/></defs>
-      <use href="#p1" xlink:href="#p1" fill="none" stroke="#86d36b" stroke-width="3"/>
-      <use href="#p2" xlink:href="#p2" fill="none" stroke="#f6b04a" stroke-width="3"/>
-      <use href="#p3" xlink:href="#p3" fill="none" stroke="#7fb9ea" stroke-width="3"/>
-      <g id="dots"></g>
-      <circle cx="75" cy="72" r="60" fill="#fff" stroke="#34c759" stroke-width="5"/>
-      <g stroke="#34c759" stroke-width="3" stroke-linecap="round"><circle cx="75" cy="52" r="9" fill="none"/><path d="M75 36v-5M75 73v-5M59 52h-5M96 52h-5M63 40l-4-4M87 64l4 4M87 40l4-4M63 64l-4 4"/></g>
-      <text id="n_solar" x="75" y="92" text-anchor="middle" font-size="25" font-weight="700" fill="#0f172a">--</text>
-      <text x="75" y="156" text-anchor="middle" font-size="21" font-weight="600" fill="#475569" id="l_solar">โซลาร์</text>
-      <circle cx="305" cy="72" r="60" fill="#fff" stroke="#f59e0b" stroke-width="5"/>
-      <g stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M305 34v10M293 44h24l5 24h-34zM288 68l-6 22M322 68l6 22M299 90l-3 18M311 90l3 18"/></g>
-      <text id="n_grid" x="305" y="104" text-anchor="middle" font-size="25" font-weight="700" fill="#0f172a">--</text>
-      <text x="305" y="156" text-anchor="middle" font-size="21" font-weight="600" fill="#475569" id="l_grid">กริด</text>
-      <circle cx="190" cy="178" r="26" fill="#fff" stroke="#94a3b8" stroke-width="3"/>
-      <path d="M180 182l8 8 16-18" stroke="#64748b" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="190" cy="288" r="64" fill="#fff" stroke="#38a3f5" stroke-width="6"/>
-      <g stroke="#38a3f5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M168 280l22-18 22 18v22h-44z"/><path d="M182 302v-12h16v12"/></g>
-      <text id="n_home" x="190" y="326" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">--</text>
-    </svg>
-    <div id="l_home" style="position:absolute;left:0;right:0;top:394px;text-align:center;font-size:19px;color:#475569;font-weight:600">LannaCom</div>
-  </div>
+  <section class="panel">
+    <div class="panel-head">
+      <span class="panel-title" data-i18n="panel.environment">ENVIRONMENT</span>
+      <span class="pill good clickable" id="comfortPill">COMFORT: --%</span>
+    </div>
+    <div class="grid2" id="envGrid"></div>
+  </section>
 
-  <!-- environment -->
-  <div id="env" class="card"><div class="ttl" id="t_env">สภาพแวดล้อม</div><span class="badge" id="b_env" style="display:none"></span>
-    <div class="grid2" id="envg"></div></div>
+  <section class="panel">
+    <div class="panel-head">
+      <span class="panel-title" data-i18n="panel.equipmentHealth">EQUIPMENT HEALTH</span>
+      <span class="pill" id="eqTotal">-- UNITS</span>
+    </div>
+    <div class="eq-grid" id="eqHealth"></div>
+  </section>
+</aside>
+<aside class="panel-col right">
+  <section class="panel" id="systemPanel">
+    <div class="panel-head">
+      <span class="panel-head-left"><span class="panel-title" data-i18n="panel.system">SYSTEM</span></span>
+    </div>
+    <div class="panel-body">
+      <div class="chips" id="categoryChips"></div>
+      <div class="panel-head" style="margin-top:10px"><span class="panel-title" data-i18n="panel.overlays">OVERLAYS</span></div>
+      <div class="chips" id="overlayChips">
+        <button class="chip chip-icon" id="clayBtn" data-i18n-title="chip.clayTip">
+          <svg class="chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg><span data-i18n="chip.clay">Clay view</span>
+        </button>
+        <button class="chip chip-icon" id="siteCtxBtn" data-i18n-title="chip.siteCtxTip">
+          <svg class="chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span data-i18n="chip.siteCtx">Surroundings</span>
+        </button>
+        <button class="chip chip-icon" id="fogBtn" data-i18n-title="chip.fogTip">
+          <svg class="chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 10a5.5 5.5 0 0 0-10.7-1.5A4.5 4.5 0 0 0 7 17h10.5a3.5 3.5 0 0 0 0-7z" transform="translate(0 -3)"/><path d="M4 20h16M7 23h10" transform="translate(0 -2)"/></svg><span data-i18n="chip.fog">Fog</span>
+        </button>
+        <button class="chip chip-icon" id="autoRotateBtn">
+          <svg class="chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v4h-4"/></svg><span data-i18n="chip.autorotate">Auto-rotate</span>
+        </button>
+        <button class="chip chip-icon" id="deviceEditBtn" title="Add and move equipment location markers. Locked when off.">
+          <svg class="chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span data-i18n="chip.editMarkers">Edit markers</span>
+        </button>
+        <button class="chip chip-icon" id="powerSimBtn" title="Simulate a power outage at LC-Main or the PoE switch going down, and see what is affected">
+          <svg class="chip-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/><line x1="3" y1="3" x2="21" y2="21"/></svg><span data-i18n="chip.powerSim">Simulate</span>
+        </button>
+      </div>
+    </div>
+  </section>
 
-  <!-- equipment -->
-  <div id="eq" class="card"><div class="ttl" id="t_eq">สถานะอุปกรณ์</div><span class="badge" id="b_eq" style="background:#eef2f7;color:#475569">—</span>
-    <div class="grid2" id="eqg"></div></div>
-
-  <!-- systems -->
-  <div id="sys" class="card"><div class="ttl" id="t_sys">ระบบ</div><div id="sysg" style="position:absolute;left:26px;right:26px;top:62px"></div></div>
-
-  <!-- sustainability -->
-  <div id="sus" class="card"><div class="ttl" id="t_sus">ความยั่งยืน</div><span class="badge" id="b_sus">—</span>
-    <div class="sub" id="s_sus" style="position:absolute;left:26px;top:52px">ข้อมูลในปีนี้ เก็บตั้งแต่ 1 ม.ค. ถึงปัจจุบัน</div>
-    <div id="susbar"></div>
-    <div class="sl" style="left:26px;--c:#84cc16"><div class="k" id="k_ysolar">โซลาร์</div><div class="v" id="v_ysolar">--</div></div>
-    <div class="sl" style="left:222px;--c:#f87171"><div class="k" id="k_ygrid">กริด</div><div class="v" id="v_ygrid">--</div></div>
-    <div class="sv" style="left:26px"><div class="k" id="k_sm">ประหยัด / เดือนก่อน</div><div class="v" id="v_sm">--</div></div>
-    <div class="sv" style="left:228px"><div class="k" id="k_sy">ประหยัด / ปีนี้</div><div class="v" id="v_sy">--</div></div>
-  </div>
-
-  <div id="foot">Map data © OpenStreetMap contributors · Microsoft building footprints (ODbL) · ESA WorldCover 2021 (CC BY 4.0) · ต้นไม้ บ้านและสภาพแวดล้อมรอบตึกเป็นการจำลอง · ตัวเลขทั้งหมดมาจากเซ็นเซอร์จริงของอาคาร</div>
+  <section class="panel" id="sustainPanel">
+    <div class="panel-head">
+      <span class="panel-head-left">
+        <span class="panel-title" data-i18n="panel.sustainability">SUSTAINABILITY</span>
+        <span class="pill good" id="susBadge">SOLAR --%</span>
+      </span>
+    </div>
+    <div class="panel-body">
+      <div class="sus-subtitle" id="susSubtitle"></div>
+      <div class="tc-bar" id="susBar"></div>
+      <div class="tc-legend" id="susLegend"></div>
+      <div class="grid2 sus-grid" id="susGrid" style="margin-top:10px"></div>
+    </div>
+  </section>
+</aside>
+<nav class="viewbar">
+  <button data-view="overview" class="active" data-i18n="view.overview">Overview</button>
+  <button data-view="top" data-i18n="view.top">Top</button>
+  <button data-view="front" data-i18n="view.front">Front</button>
+  <button data-view="side" data-i18n="view.side">Side</button>
+</nav>
+<div id="scStale" class="sc-hidden"></div>
+<div id="scCredit">© OpenStreetMap contributors (ODbL) · Microsoft building footprints (ODbL) · ESA WorldCover 2021 (CC BY 4.0)</div>
 </div>
-
+</div>
+</div>
 <script src="config.js"></script>
-<script>
-(function () {
-  var C = window.SHOWCASE_CONFIG || {};
-  var API = (new RegExp("[?&]api=([^&]+)").exec(location.search) || [])[1];
-  API = API ? decodeURIComponent(API) : C.api;
-  var EVERY = (C.refreshSeconds || 20) * 1000;
-  var LANG = ((new RegExp("[?&]lang=([a-z]+)").exec(location.search) || [])[1] || C.lang || "th");
-  var T = {
-    th: { energy: "พลังงาน", env: "สภาพแวดล้อม", eq: "สถานะอุปกรณ์", sys: "ระบบ", sus: "ความยั่งยืน", solar: "โซลาร์", grid: "กริด", temp: "อุณหภูมิ", hum: "ความชื้น", co2: "CO₂", pm: "PM2.5", ok: "ปกติ", warn: "เตือน", off: "ไม่ตอบสนอง", total: "ทั้งหมด", units: "ตัว", comfort: "ความสบาย", good: "ดี", fair: "พอใช้", poor: "ควรระวัง",
-      susSub: "ข้อมูลในปีนี้ เก็บตั้งแต่ 1 ม.ค. ถึงปัจจุบัน", yr: "/ปี", saveM: "ประหยัด / เดือนก่อน", saveY: "ประหยัด / ปีนี้", sOf: "โซลาร์", live: "LIVE", lastRead: "ค่าล่าสุด",
-      power: "พลังงาน", ev: "รถ EV", air: "คุณภาพอากาศ", ac: "ปรับอากาศ", light: "แสงสว่าง", cctv: "กล้องวงจรปิด", co2s: "CO₂ ที่ลดได้", evAll: "ชาร์จสะสม", on: "เปิด",
-      wx: { clear: "แจ่มใส", partly: "มีเมฆบางส่วน", cloudy: "เมฆมาก", fog: "หมอก", drizzle: "ฝนปรอย", rain: "ฝน", heavy_rain: "ฝนหนัก", thunder: "พายุฟ้าคะนอง", storm: "พายุฟ้าคะนอง" } },
-    en: { energy: "Energy", env: "Environment", eq: "Equipment status", sys: "Systems", sus: "Sustainability", solar: "Solar", grid: "Grid", temp: "Temperature", hum: "Humidity", co2: "CO₂", pm: "PM2.5", ok: "Normal", warn: "Alert", off: "No response", total: "Total", units: "devices", comfort: "Comfort", good: "Good", fair: "Fair", poor: "Caution",
-      susSub: "This calendar year, since 1 Jan", yr: "/yr", saveM: "Saved / last month", saveY: "Saved / this year", sOf: "Solar", live: "LIVE", lastRead: "Last reading",
-      power: "Energy", ev: "EV", air: "Air quality", ac: "Air-con", light: "Lighting", cctv: "CCTV", co2s: "CO₂ avoided", evAll: "Delivered", on: "on",
-      wx: { clear: "Clear", partly: "Partly cloudy", cloudy: "Cloudy", fog: "Fog", drizzle: "Drizzle", rain: "Rain", heavy_rain: "Heavy rain", thunder: "Thunderstorm", storm: "Thunderstorm" } }
-  }[LANG] || null;
-  if (!T) T = {};
-  function $(id) { return document.getElementById(id); }
-  function fit() {
-    var s = Math.min(innerWidth / 1920, innerHeight / 1080), st = $("stage");
-    st.style.transform = "scale(" + s + ")";
-    st.style.left = Math.round((innerWidth - 1920 * s) / 2) + "px";
-    st.style.top = Math.round((innerHeight - 1080 * s) / 2) + "px";
-  }
-  fit(); addEventListener("resize", fit);
-
-  function num(v, d) { return v === null || v === undefined ? "--" : (d ? v.toFixed(d) : Math.round(v)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
-  function has(v) { return v !== null && v !== undefined; }
-
-  // ── static labels
-  var ids = { t_energy: T.energy, t_env: T.env, t_eq: T.eq, t_sys: T.sys, t_sus: T.sus, l_solar: T.solar, l_grid: T.grid, s_sus: T.susSub, k_sm: T.saveM, k_sy: T.saveY, k_ysolar: T.solar, k_ygrid: T.grid };
-  for (var k in ids) if ($(k)) $(k).textContent = ids[k];
-  document.documentElement.lang = LANG;
-
-  // ── clock (Bangkok)
-  function tick() {
-    var d = new Date(Date.now() + (new Date().getTimezoneOffset() + 420) * 60000), p = function (n) { return (n < 10 ? "0" : "") + n; };
-    $("clock").textContent = p(d.getHours()) + ":" + p(d.getMinutes());
-  }
-  tick(); setInterval(tick, 10000);
-
-  // ── energy-flow dots (SMIL) : วิ่งเมื่อมีกำลังไฟ
-  var DOTS = [["p1", "#34c759"], ["p2", "#f59e0b"], ["p3", "#38a3f5"]];
-  function dotsHTML(active) {
-    var s = "";
-    for (var i = 0; i < DOTS.length; i++) {
-      if (!active[i]) continue;
-      for (var j = 0; j < 3; j++) s += '<circle r="6" fill="' + DOTS[i][1] + '"><animateMotion dur="2.6s" begin="' + (j * 0.87) + 's" repeatCount="indefinite"><mpath href="#' + DOTS[i][0] + '" xlink:href="#' + DOTS[i][0] + '"/></animateMotion></circle>';
-    }
-    $("dots").innerHTML = s;
-  }
-  var lastDots = "";
-
-  var ICON = {
-    bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>', sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
-    car: '<path d="M5 17h14M6 17v2M18 17v2M4 13l2-6h12l2 6v4H4z"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/>', wind: '<path d="M3 9h11a3 3 0 1 0-3-3M3 15h15a3 3 0 1 1-3 3M3 12h8"/>',
-    ac: '<path d="M12 2v20M5 6l14 12M19 6L5 18M3 12h18"/>', lamp: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z"/>',
-    cam: '<rect x="2" y="7" width="14" height="10" rx="2"/><path d="M16 11l6-3v8l-6-3z"/>', leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 2-5.4 5-6"/>'
-  };
-  function ic(n) { return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICON[n] + '</svg>'; }
-  function wxIcon(kind, night) {
-    var c = "#0f172a", cloud = '<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11a3.5 3.5 0 0 0 1 7z"/>';
-    var inner = kind === "clear" ? (night ? '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>' : ICON.sun)
-      : kind === "partly" ? '<path d="M12 3v2M4.2 6.2l1.4 1.4M20 12h2M2 12h2"/><circle cx="12" cy="10" r="3.4"/><path d="M8 20h9a3.5 3.5 0 0 0 .4-7"/>'
-      : kind === "fog" ? cloud + '<path d="M5 21h14"/>'
-      : (kind === "drizzle" || kind === "rain" || kind === "heavy_rain") ? cloud + '<path d="M8 21l1-2M12 21l1-2M16 21l1-2"/>'
-      : (kind === "thunder" || kind === "storm") ? cloud + '<path d="M12 13l-2 4h3l-1 4"/>' : cloud;
-    return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="' + c + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>';
-  }
-
-  function render(d) {
-    var e = d.energy || {}, a = (d.air && d.air.office) || {}, y = d.year || {}, sv = d.savings || {}, q = d.equipment, s = d.systems || {}, w = d.weather;
-    // top
-    if (w) {
-      $("wxic").innerHTML = wxIcon(w.kind, !w.is_day); $("wxtxt").textContent = T.wx[w.kind] || ""; $("wxt").textContent = has(w.temp) ? w.temp + "°" : "--°";
-    }
-    var live = $("live");
-    if (d.stale) { live.className = "pill live warn"; $("livetxt").textContent = T.lastRead; } else { live.className = "pill live"; $("livetxt").textContent = T.live; }
-    // energy
-    $("n_solar").textContent = has(e.solar_kw) ? e.solar_kw.toFixed(2) + " kW" : "--";
-    $("n_grid").textContent = has(e.grid_kw) ? e.grid_kw.toFixed(2) + " kW" : "--";
-    $("n_home").textContent = has(e.home_kw) ? e.home_kw.toFixed(2) + " kW" : "--";
-    var act = [has(e.solar_kw) && e.solar_kw > 0.05, has(e.grid_kw) && e.grid_kw > 0.05, has(e.home_kw) && e.home_kw > 0.05], key = act.join();
-    if (key !== lastDots) { dotsHTML(act); lastDots = key; }
-    $("b_energy").style.display = "none";
-    // environment (เฉพาะค่าที่มี)
-    var cells = [[T.temp, a.temp, "°C", 1], [T.hum, a.humidity, "%", 0], [T.co2, a.co2, "ppm", 0], [T.pm, has(a.pm25) ? a.pm25 : (d.air ? d.air.outdoor_pm25 : null), "µg/m³", 0]];
-    var h = "";
-    for (var i = 0; i < cells.length; i++) h += '<div class="cell" style="left:' + (i % 2 ? 202 : 0) + 'px;top:' + (i > 1 ? 90 : 0) + 'px"><div class="k">' + cells[i][0] + '</div><div class="v">' + (has(cells[i][1]) ? num(cells[i][1], cells[i][3]) : "--") + '<i>' + cells[i][2] + '</i></div></div>';
-    $("envg").innerHTML = h;
-    var pm = has(a.pm25) ? a.pm25 : (d.air ? d.air.outdoor_pm25 : null), co2 = a.co2, bad = (has(co2) && co2 > 1000) || (has(pm) && pm > 50), mid = (has(co2) && co2 > 800) || (has(pm) && pm > 25);
-    var bE = $("b_env"); if (has(pm) || has(co2)) { bE.style.display = ""; bE.textContent = T.comfort + ": " + (bad ? T.poor : mid ? T.fair : T.good); bE.style.color = bad ? "#b91c1c" : mid ? "#a16207" : "#3f7d0a"; bE.style.background = bad ? "#fee2e2" : mid ? "#fef3c7" : "#e7f4d6"; }
-    // equipment
-    if (q) {
-      var cl = [[T.ok, q.online, "#22c55e"], [T.warn, q.alarm, "#f59e0b"], [T.off, q.off, "#94a3b8"], [T.total, q.total, "#38a3f5"]];   // ไม่โชว์ "ผิดพลาด": ตัวเลขนั้นมาจากการเฝ้าดูในเบราว์เซอร์ของ Digital Twin ไม่มีบนเซิร์ฟเวอร์
-      var eh = "";
-      for (var j = 0; j < cl.length; j++) eh += '<div class="eqc" style="--c:' + cl[j][2] + ';left:' + (j % 2 ? 202 : 0) + 'px;top:' + (j > 1 ? 90 : 0) + 'px"><div class="k">' + cl[j][0] + '</div><div class="v">' + num(cl[j][1]) + '</div></div>';
-      $("eqg").innerHTML = eh; $("b_eq").style.display = "none";
-    }
-    // systems tiles (ซ่อนช่องที่ไม่มีข้อมูล)
-    var tiles = [
-      [T.power, "bolt", has(e.home_kw) ? num(e.home_kw, 1) : null, "kW"], [T.solar, "sun", has(e.solar_kw) ? num(e.solar_kw, 1) : null, "kW"],
-      [T.ev, "car", d.ev && has(d.ev.kwh_total) ? num(d.ev.kwh_total) : null, "kWh"], [T.air + " PM2.5", "wind", has(pm) ? num(pm) : null, "µg/m³"],
-      [T.ac, "ac", s.ac_total ? s.ac_on + "/" + s.ac_total : null, ""], [T.light, "lamp", s.lights_total ? s.lights_on + "/" + s.lights_total : null, ""],
-      [T.cctv, "cam", s.cameras_online > 0 ? s.cameras_online + "/" + s.cameras_total : null, ""], [T.co2s, "leaf", has(e.co2_avoided_kg) ? num(e.co2_avoided_kg) : null, "kg"]
-    ];
-    var th = "", n = 0;
-    for (var t = 0; t < tiles.length; t++) {
-      if (tiles[t][2] === null) continue;
-      th += '<div class="tile" style="left:' + (n % 2 ? 202 : 0) + 'px;top:' + (Math.floor(n / 2) * 128) + 'px">' + ic(tiles[t][1]) + '<div class="k">' + tiles[t][0] + '</div><div class="v">' + tiles[t][2] + (tiles[t][3] ? '<i>' + tiles[t][3] + '</i>' : '') + '</div></div>';
-      n++;
-    }
-    $("sysg").innerHTML = th;
-    // sustainability
-    var sp = has(y.solar_pct) ? y.solar_pct : null;
-    if (sp !== null) {
-      $("susbar").innerHTML = '<div style="width:' + sp + '%;background:#84cc16">' + (sp >= 14 ? sp.toFixed(1) + "%" : "") + '</div><div style="width:' + (100 - sp) + '%;background:#f87171">' + (100 - sp >= 14 ? (100 - sp).toFixed(1) + "%" : "") + '</div>';
-      $("b_sus").textContent = T.sOf + " " + Math.round(sp) + "%";
-    }
-    $("v_ysolar").innerHTML = num(y.solar_kwh) + ' <i>kWh' + T.yr + '</i>'; $("v_ygrid").innerHTML = num(y.grid_kwh) + ' <i>kWh' + T.yr + '</i>';
-    $("v_sm").textContent = has(sv.last_month_thb) ? num(sv.last_month_thb) + " ฿" : "--"; $("v_sy").textContent = has(sv.year_thb) ? num(sv.year_thb) + " ฿" : "--";
-  }
-
-  var fails = 0;
-  function load() {
-    if (!API) return;
-    var x = new XMLHttpRequest();
-    x.open("GET", API + (API.indexOf("?") > -1 ? "&" : "?") + "t=" + Date.now(), true);
-    x.timeout = 15000;
-    x.onload = function () {
-      try { render(JSON.parse(x.responseText)); fails = 0; } catch (e) { fails++; }
-    };
-    x.onerror = x.ontimeout = function () { fails++; if (fails > 3) { var l = $("live"); l.className = "pill live warn"; $("livetxt").textContent = T.lastRead; } };
-  x.send();
-  }
-  load(); setInterval(load, EVERY);
-  // รีโหลดหน้าเองทุก 6 ชม. กันหน่วยความจำสะสมบนเครื่องเล่น
-  setTimeout(function () { location.reload(); }, 6 * 3600 * 1000);
-  window.__showcase = { render: render };
-})();
-</script>
+<script src="twin-ui.js"></script>
+<script src="showcase.js"></script>
 </body>
 </html>

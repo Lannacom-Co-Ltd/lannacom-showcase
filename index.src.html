@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- ไฟล์นี้คือแม่แบบ — showcase/index.html สร้างจากมันด้วย `node tools/build-showcase.js` (แทนที่ {{...}} ด้วยมาร์กอัปจริงของหน้า 3D ใน public/index.html) -->
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lannacom Live Showcase</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="twin.css">
+</head>
+<body>
+<div id="stage">
+{{TOPBAR}}
+<div id="appBody">
+<div id="appMain">
+<main id="viewport">
+  <div id="levelList" class="level-float"></div>
+</main>
+{{LEFT}}
+{{RIGHT}}
+{{VIEWBAR}}
+<div id="scStale" class="sc-hidden"></div>
+<div id="scCredit">© OpenStreetMap contributors (ODbL) · Microsoft building footprints (ODbL) · ESA WorldCover 2021 (CC BY 4.0)</div>
+</div>
+</div>
+</div>
+<script src="config.js"></script>
+<script src="twin-ui.js"></script>
+<script src="showcase.js"></script>
+</body>
+</html>
