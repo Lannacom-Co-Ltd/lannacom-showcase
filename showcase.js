@@ -43,8 +43,8 @@
             h += '<button class="chip chip-icon' + (c.key === "all" ? " active" : "") + '">' + U.catIcon(c.key) + "<span>" + lab + "</span></button>";
         }
         $("categoryChips").innerHTML = h;
-        var on = ["siteCtxBtn", "fogBtn"];   // ค่าตั้งต้นของ twin: Surroundings + Fog เปิด
-        for (i = 0; i < on.length; i++) if ($(on[i])) $(on[i]).classList.add("active");
+        var fog = $("fogBtn"); if (fog && fog.parentNode) fog.parentNode.removeChild(fog);   // ผู้ใช้ 2026-10-04: เอาปุ่ม "หมอก" ออก
+        if ($("siteCtxBtn")) $("siteCtxBtn").classList.add("active");   // ค่าตั้งต้นของ twin: Surroundings เปิด
     }
 
     // ── ปุ่มเลือกชั้น (ลอยซ้ายของแผง SUSTAINABILITY เหมือน positionLevelFloat) ──
@@ -83,8 +83,6 @@
 
     function render(d) {
         var e = d.energy || {}, f = d.flow || {}, air = (d.air && d.air.office) || {}, y = d.year || {}, sv = d.savings || {};
-        $("scStale").classList.toggle("sc-hidden", !d.stale);
-        $("scStale").textContent = LANG === "th" ? "ค่าล่าสุด · ต่อ Home Assistant ไม่ได้ชั่วคราว" : "Last known values · Home Assistant unreachable";
         lastWeather = d.weather || lastWeather; renderWeatherPill();
 
         // ── ไดอะแกรม Energy flow (ตรรกะเดียวกับ renderPanels โหมด energy) ──
@@ -118,7 +116,14 @@
 
         // ── ENVIRONMENT ──
         var vals = { temp: air.temp, hum: air.humidity, co2: air.co2, pm: air.pm25 };
-        if (FILL) { if (!has(vals.temp)) vals.temp = 25.1; if (!has(vals.hum)) vals.hum = 56; if (!has(vals.co2)) vals.co2 = 612; if (!has(vals.pm)) vals.pm = 8; }
+        // เซ็นเซอร์ห้อง (AM319) ไม่ส่งค่า → ใช้ค่าจริงของข้างนอกแทน (อุณหภูมิ/ความชื้นจากสภาพอากาศ, PM2.5 จาก IQAir) ส่วน CO₂ ไม่มีแหล่งจริงจึงใช้ค่าตัวอย่าง (ปิดได้ด้วย fillMissing:false)
+        if (FILL) {
+            var w = d.weather || lastWeather || {}, outPm = d.air ? d.air.outdoor_pm25 : null;
+            if (!has(vals.temp)) vals.temp = has(w.temp) ? w.temp : null;
+            if (!has(vals.hum)) vals.hum = has(w.humidity) ? w.humidity : null;
+            if (!has(vals.pm)) vals.pm = has(outPm) ? outPm : null;
+            if (!has(vals.co2)) vals.co2 = 612;
+        }
         var fmt = function (v, u) { return has(v) ? (+(+v).toFixed(3)) + " " + u : "--"; };
         $("envGrid").innerHTML = [
             { k: t("env.temperature"), v: fmt(vals.temp, "°C") }, { k: t("env.humidity"), v: fmt(vals.hum, "%") },
@@ -181,7 +186,7 @@
         x.open("GET", API + (API.indexOf("?") > -1 ? "&" : "?") + "t=" + Date.now(), true);
         x.timeout = 15000;
         x.onload = function () { try { render(JSON.parse(x.responseText)); fails = 0; } catch (err) { fails++; } };
-        x.onerror = x.ontimeout = function () { fails++; if (fails > 3) { var s = $("scStale"); s.textContent = LANG === "th" ? "ค่าล่าสุด · เชื่อมต่อเซิร์ฟเวอร์ไม่ได้" : "Last known values · server unreachable"; s.classList.remove("sc-hidden"); } };
+        x.onerror = x.ontimeout = function () { fails++; };   // ผู้ใช้ 2026-10-04: ไม่แสดงป้าย "ค่าล่าสุด" — ต่อไม่ได้ก็คงค่าเดิมไว้เงียบๆ
         x.send();
     }
 
