@@ -12,7 +12,7 @@ sustainability (year solar vs grid kWh, savings), weather pill. Decoration only 
 - `twin.css` — the Digital Twin's own `style.css` + fixed light/dark theme + a 1536×864 stage scaled ×1.25 to 1920×1080 (**generated**)
 - `twin-ui.js` — the Twin's own drawing code (energy-flow diagram, icons, comfort ranks) + Thai/English texts (**generated**)
 - `showcase.js` — fetches the data and fills the panels (hand-written; ES5/ES2015, no `?.`/`??` so old BrightSign Chromium runs it)
-- `config.js` — `api` (data URL), `refreshSeconds`, `lang` (`th`/`en`), `theme` (`light`/`dark`), `fillMissing` (default on: room-sensor gaps use real outdoor temp/humidity/PM2.5 and a sample CO₂)
+- `config.js` — `api` (data URL), `refreshSeconds`, `lang` (`en` default, `th` optional), `theme` (`light`/`dark`), `fillMissing` (default on: room-sensor gaps use real outdoor temp/humidity/PM2.5 and a sample CO₂)
 - `bg.jpg` — background (screenshot of the twin's 3D view, scaled to cover)
 - `.nojekyll` — tells GitHub Pages to serve the files as they are
 

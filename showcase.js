@@ -145,11 +145,13 @@
         var eq = d.equipment;
         if (eq) {
             $("eqTotal").textContent = eq.total + " " + t("units.units");
+            // ผู้ใช้ 2026-10-05: ช่อง "ปิด/Off" เป็น mockup = 0 · "ปกติ" = ที่เหลือทั้งหมด เพื่อให้รวมกันได้เท่ากับจำนวนอุปกรณ์ (ไม่ใช่ค่าจริงของช่องเหล่านี้)
+            var offMock = 0, normal = Math.max(0, eq.total - eq.alarm - offMock);
             var cells = [
-                { label: t("eq.OperationalShort"), v: eq.online, color: "var(--green)", status: "online" },
+                { label: t("eq.OperationalShort"), v: normal, color: "var(--green)", status: "online" },
                 { label: t("eq.Alarm"), v: eq.alarm, color: "var(--amber)", status: "alarm" },
                 { label: t("eq.Error"), v: 0, color: "var(--red)", status: "error" },   // จำนวน "Error" มาจากการเฝ้าดูในเบราว์เซอร์ของ twin — ไม่มีบนเซิร์ฟเวอร์ จึงเป็น 0
-                { label: t("eq.Off"), v: eq.off, color: "var(--muted)", status: "off" }
+                { label: t("eq.Off"), v: offMock, color: "var(--muted)", status: "off" }
             ];
             $("eqHealth").innerHTML = cells.map(function (c) {
                 return '<div class="eq-cell" data-status="' + c.status + '"><span class="eq-dot" style="background:' + c.color + "; color:" + c.color + '"></span><span class="eq-lbl">' + c.label + '</span><span class="eq-num">' + c.v + "</span></div>";
@@ -167,7 +169,7 @@
             '<span class="item"><span class="lk"><span class="dot" style="background:#a3e635"></span>' + esc(t("lbl.solar")) + '</span><span class="lv">' + kwh(solarT) + "</span></span>" +
             '<span class="item"><span class="lk"><span class="dot" style="background:#f87171"></span>' + esc(t("lbl.grid")) + '</span><span class="lv">' + kwh(gridT) + "</span></span>";
         $("susBadge").textContent = t("sus.solarPct") + " " + (total > 0 ? sp.toFixed(0) : "--") + "%";
-        var thb = function (v) { return has(v) ? grp(Math.round(v)) + " ฿" : "--"; };
+        var thb = function (v) { return has(v) ? grp(Math.round(v)) + (LANG === "en" ? " THB" : " ฿") : "--"; };
         $("susGrid").innerHTML = [{ k: t("sus.savingsWeek"), v: thb(f.savings_week_thb) }, { k: t("sus.savingsMonth"), v: thb(sv.last_month_thb) }]
             .map(function (s) { return '<div class="stat"><div class="sk">' + esc(s.k) + '</div><div class="sv">' + s.v + "</div></div>"; }).join("");
         positionLevelFloat();
